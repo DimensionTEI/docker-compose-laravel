@@ -15,12 +15,14 @@ services:
     ports:
       - 80:80
     volumes:
-      - ./src:/var/www/html:delegated
+      - ${APP_WORK_DIR}:/var/www/html:delegated
+      - phpmyadmin:/var/www/phpmyadmin
     depends_on:
       - php
       - redis
       - mysql
       - mailhog
+      - phpmyadmin
     networks:
       - laravel
 
@@ -32,12 +34,29 @@ services:
     ports:
       - 3306:3306
     environment:
-      MYSQL_DATABASE: homestead
-      MYSQL_USER: homestead
-      MYSQL_PASSWORD: secret
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_USER: ${DATABASE_USER}
+      MYSQL_PASSWORD: ${DATABASE_PASS}
       MYSQL_ROOT_PASSWORD: secret
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    volumes:
+      - ./mysql:/var/lib/mysql
+    networks:
+      - laravel
+
+  phpmyadmin:
+    image: phpmyadmin:fpm-alpine
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: secret
+    restart: always
+    depends_on:
+      - mysql
+    volumes:
+      - phpmyadmin:/var/www/html
     networks:
       - laravel
 
@@ -49,8 +68,11 @@ services:
         - UID=${UID:-1000}
         - GID=${GID:-1000}
     container_name: php
+    depends_on:
+      - redis
     volumes:
-      - ./src:/var/www/html:delegated
+      - ${APP_WORK_DIR}:/var/www/html:delegated
+      - phpmyadmin:/var/www/phpmyadmin
     networks:
       - laravel
 
@@ -72,7 +94,7 @@ services:
         - GID=${GID:-1000}
     container_name: composer
     volumes:
-      - ./src:/var/www/html
+      - ${APP_WORK_DIR}:/var/www/html
     working_dir: /var/www/html
     depends_on:
       - php
@@ -85,7 +107,7 @@ services:
     image: node:13.7
     container_name: npm
     volumes:
-      - ./src:/var/www/html
+      - ${APP_WORK_DIR}:/var/www/html
     ports:
       - 3000:3000
       - 3001:3001
@@ -103,7 +125,7 @@ services:
         - GID=${GID:-1000}
     container_name: artisan
     volumes:
-      - ./src:/var/www/html:delegated
+      - ${APP_WORK_DIR}:/var/www/html:delegated
     depends_on:
       - mysql
     working_dir: /var/www/html
@@ -119,3 +141,6 @@ services:
       - 8025:8025
     networks:
       - laravel
+
+volumes:
+  phpmyadmin:
