@@ -16,7 +16,7 @@ services:
       - 80:80
     volumes:
       - ${APP_WORK_DIR}:/var/www/html:delegated
-      - phpmyadmin:/var/www/phpmyadmin
+      - phpmyadmin:/var/www/phpmyadmin:ro
     depends_on:
       - php
       - redis
@@ -46,17 +46,18 @@ services:
       - laravel
 
   phpmyadmin:
-    image: phpmyadmin:fpm-alpine
+    image: phpmyadmin:latest
     container_name: phpmyadmin
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
       MYSQL_ROOT_PASSWORD: secret
+      PMA_ABSOLUTE_URI: http://localhost:8000/
     restart: always
+    ports:
+      - 8000:80
     depends_on:
       - mysql
-    volumes:
-      - phpmyadmin:/var/www/html
     networks:
       - laravel
 
