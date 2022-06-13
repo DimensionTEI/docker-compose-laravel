@@ -16,7 +16,6 @@ services:
       - 80:80
     volumes:
       - ${APP_WORK_DIR}:/var/www/html:delegated
-      - phpmyadmin:/var/www/phpmyadmin:ro
     depends_on:
       - php
       - redis
@@ -73,7 +72,6 @@ services:
       - redis
     volumes:
       - ${APP_WORK_DIR}:/var/www/html:delegated
-      - phpmyadmin:/var/www/phpmyadmin
     networks:
       - laravel
 
@@ -142,6 +140,3 @@ services:
       - 8025:8025
     networks:
       - laravel
-
-volumes:
-  phpmyadmin:
